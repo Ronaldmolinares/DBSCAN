@@ -4,6 +4,7 @@ import numpy as np
 from core.my_dbscan import MyDBSCAN
 from sklearn import datasets
 import matplotlib.pyplot as plt
+from core.metrics import all_metrics
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
