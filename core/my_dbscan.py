@@ -50,7 +50,7 @@ class MyDBSCAN:
         while i < len(neighbors):
             neighbor_idx = neighbors[i]
 
-            # Si estaba marcado como ruido → lo reasignamos
+            # Si estaba marcado como ruido entonces lo reasignamos
             if labels[neighbor_idx] == -1:
                 labels[neighbor_idx] = cluster_id
 
@@ -62,7 +62,7 @@ class MyDBSCAN:
                 neighbor_neighbors = self._region_query(X, neighbor_idx)
 
                 if len(neighbor_neighbors) >= self.min_pts:
-                    # unir ambas listas
+                    # unimos ambas listas
                     neighbors = np.concatenate((neighbors, neighbor_neighbors))
 
             i += 1
@@ -80,7 +80,7 @@ class MyDBSCAN:
              1..k → clusters
         """
         n = X.shape[0]
-        labels = np.zeros(n, dtype=int)  # 0 = no visitado
+        labels = np.zeros(n, dtype=int)  # 0 =no visitado
         cluster_id = 0
 
         for point_idx in range(n):
@@ -91,12 +91,12 @@ class MyDBSCAN:
 
             neighbors = self._region_query(X, point_idx)
 
-            # No es núcleo → marcar como ruido
+            # No es núcleo se marcar como ruido
             if len(neighbors) < self.min_pts:
                 labels[point_idx] = -1
                 continue
 
-            # Sí es núcleo → crear nuevo cluster
+            # Sí es núcleo se crear nuevo cluster
             cluster_id += 1
             self._expand_cluster(X, labels, point_idx, neighbors, cluster_id)
 
