@@ -51,8 +51,3 @@ def compare_clustering(X, y_true=None, eps=0.3, min_pts=5, k=3):
     print("\n=== MÉTRICAS HAC ===")
     print(metrics_hac)
 
-
-if __name__ == "__main__":
-    # Probar con moons (etiquetas reales disponibles)
-    X, y = load_moons()
-    compare_clustering(X, y_true=y, eps=0.3, min_pts=5, k=2)
