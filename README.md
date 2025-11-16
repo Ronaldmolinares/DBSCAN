@@ -1,4 +1,4 @@
-# Implementación propia del algoritmo DBSCAN (Density-Based Spatial Clustering of Applications with Noise) sin usar librerías de clustering externas.
+# Implementación del algoritmo DBSCAN (Density-Based Spatial Clustering of Applications with Noise)
 
 ## Características
 
@@ -99,12 +99,8 @@ Similaridad con etiquetas verdaderas (corregido por azar).
 
 ### 4. K-Distance Graph
 Gráfico para seleccionar epsilon óptimo:
-```python
-from core.metrics import compute_k_distance, find_optimal_eps
+- k = minPts − 1
 
-k_dist = compute_k_distance(X, k=4)
-eps_optimal = find_optimal_eps(X, k=4)
-```
 
 ## Estructura del Proyecto
 
@@ -135,17 +131,17 @@ DBSCAN/
 
 - Detecta clusters de **forma arbitraria**
 - No requiere especificar número de clusters
-- Identifica **outliers** naturalmente
+- Identifica **outliers** 
 - Robusto a ruido
 
 ## Parámetros
 
 | Parámetro | Descripción | Rango típico |
 |-----------|-------------|--------------|
-| `eps` | Radio de vecindad | 0.1 - 2.0 |
+| `eps` | Radio de vecindad -> epsilon | 0.1 - 2.0 |
 | `min_pts` | Mínimo de vecinos para core point | 3 - 10 |
 
-**Recomendación**: Usar k-distance graph para seleccionar `eps`, a veces DBSCAN produce 1 solo cluster o el epsilon recomendado no es perfecto.
+**Recomendación**: Usar k-distance graph para seleccionar `eps`, puede que el epsilon recomendado haga que en DBSCAN se produzca 1 solo cluster (epsilon grande para los datos). el epsilon recomendado no es perfecto.
 
 ## Dependencias
 
