@@ -79,6 +79,12 @@ class MyDBSCAN:
              0 → sin asignar
              1..k → clusters
         """
+        if X.shape[0] == 0:  
+            raise ValueError("Dataset vacío")
+        
+        if X.ndim != 2:  
+            raise ValueError("X debe ser matriz 2D")
+        
         n = X.shape[0]
         labels = np.zeros(n, dtype=int)  # 0 =no visitado
         cluster_id = 0
