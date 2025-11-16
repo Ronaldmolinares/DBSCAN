@@ -141,7 +141,7 @@ DBSCAN/
 | `eps` | Radio de vecindad -> epsilon | 0.1 - 2.0 |
 | `min_pts` | Mínimo de vecinos para core point | 3 - 10 |
 
-**Recomendación**: Usar k-distance graph para seleccionar `eps`, puede que el epsilon recomendado haga que en DBSCAN se produzca 1 solo cluster (epsilon grande para los datos). el epsilon recomendado no es perfecto.
+**Nota**: Usar k-distance graph para seleccionar `eps`, puede que el epsilon recomendado haga que en DBSCAN se produzca 1 solo cluster (epsilon grande para los datos). el epsilon recomendado no es perfecto.
 
 ## Dependencias
 
