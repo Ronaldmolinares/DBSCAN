@@ -59,11 +59,11 @@ def normalize(X):
 #  CARGA DE CSV
 # --------------------------------------------------------
 
-def load_csv(path, normalize_data=False):
+def load_csv(path, normalize_data=False, has_labels=False):
     """
     Carga un archivo CSV con coordenadas numéricas.
-    - Filtra filas con NaN
-    - Convierte a float
+    - Filtra filas con NaN y convierte a float
+    - has_labels (bool): Si True, asume última columna son etiquetas
     """
 
     try:
@@ -86,6 +86,11 @@ def load_csv(path, normalize_data=False):
 
     if normalize_data:
         clean = normalize(clean)
+
+    if has_labels and clean.shape[1] >= 3:
+        X = clean[:, :-1]
+        y = clean[:, -1].astype(int)
+        return X, y
 
     # No hay etiquetas para CSV
     return clean, None

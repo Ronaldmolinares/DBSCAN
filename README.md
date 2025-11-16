@@ -145,6 +145,17 @@ DBSCAN/
 
 **Nota**: Usar k-distance graph para seleccionar `eps`, puede que el epsilon recomendado haga que en DBSCAN se produzca 1 solo cluster (epsilon grande para los datos). el epsilon recomendado no es perfecto.
 
+## Complejidad Computacional
+
+- **Tiempo**: O(n²) sin índices espaciales
+- **Espacio**: O(n) para almacenar etiquetas y vecindarios
+
+## Limitaciones
+
+- Sensible a la selección de `ε` y `minPts`
+- Rendimiento degradado con densidades variables
+- Complejidad O(n²) sin optimizaciones
+
 ## Dependencias
 
 - Python 3.8+
