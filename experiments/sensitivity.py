@@ -33,11 +33,3 @@ def k_distance_graph(X, minPts):
     plt.show()
 
     return k_dist
-
-
-if __name__ == "__main__":
-    X, _ = load_moons()  # se puede cambiar
-    minPts = 5
-
-    print("Generando k-distance graph...")    
-    k_distances = k_distance_graph(X, minPts)

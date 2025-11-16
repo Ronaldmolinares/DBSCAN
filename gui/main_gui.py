@@ -353,11 +353,3 @@ class DBSCANApp:
 
             table.insert("", tk.END, values=(name, fmt(v_db), fmt(v_km), fmt(v_hc)))
 
-
-# ===========================================================
-# EJECUCIÓN PRINCIPAL
-# ===========================================================
-if __name__ == "__main__":
-    root = tk.Tk()
-    app = DBSCANApp(root)
-    root.mainloop()
