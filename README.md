@@ -20,6 +20,8 @@ pip install -r requirements.txt
 python run.py
 ```
 
+![Resultado DBSCAN](images/dbscan_result.png)
+
 ## Implementación DBSCAN
 
 ### Algoritmo Core
