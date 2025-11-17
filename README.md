@@ -75,6 +75,7 @@ python -m experiments.comparison
 python -m experiments.sensitivity
 ```
 
+### 4. Ejecución del proyecto
 ![Resultado DBSCAN](images/dbscan_result.png)
 
 ## Implementación DBSCAN
@@ -215,8 +216,8 @@ DBSCAN/
 ### Funciones de Análisis
 3. **Ejecutar DBSCAN**: 
    - Clustering con parámetros actuales
-   - Visualización inmediata de resultados
-   - Métricas automáticas en panel informativo
+   - Visualización de resultados
+   - Métricas en panel informativo
 
 4. **Comparación de Algoritmos**: 
    - Visualización lado a lado: DBSCAN vs K-Means vs Hierarchical
@@ -230,14 +231,6 @@ DBSCAN/
 6. **Ver Tabla de Métricas**: 
    - Tabla comparativa emergente
    - Métricas de los 3 algoritmos en formato tabular
-   - Exportable mediante captura de pantalla
-
-### Visualización
-7. **Gráficos Matplotlib Embebidos**:
-   - Clusters con colores únicos
-   - Outliers en negro con marcador 'x'
-   - Leyenda automática
-   - Grid y ejes etiquetados
 
 
 ## Datasets Soportados
@@ -309,61 +302,6 @@ Genera k-distance graphs para múltiples valores de minPts. Útil para:
 - **Regla general**: minPts ≥ dimensión + 1
 - **Datasets con ruido**: Valores más altos (5-10) para mayor robustez
 
-## Complejidad Computacional
-
-### Análisis de Complejidad
-- **Tiempo**: O(n²) sin estructuras de datos espaciales
-  - `_region_query()`: O(n) por punto
-  - `fit()`: O(n) iteraciones × O(n) consultas = O(n²)
-- **Espacio**: O(n) para almacenar:
-  - `labels`: array de etiquetas (n elementos)
-  - `neighbors`: lista temporal de vecinos (≤ n elementos)
-
-### Optimizaciones Posibles (No Implementadas)
-- **KD-Tree / Ball-Tree**: Reducción a O(n log n) en promedio
-- **Spatial Indexing**: R-tree para consultas de rango eficientes
-- **Paralelización**: Region queries son independientes
-
-**Justificación de O(n²)**: Implementación didáctica que prioriza claridad sobre optimización. Suficiente para n ≤ 500 puntos (tiempo de respuesta < 2s).
-
-## Limitaciones y Consideraciones
-
-### Limitaciones Algorítmicas
-1. **Sensibilidad a parámetros**: 
-   - Requiere ajuste manual o análisis de k-distance
-   - Diferentes regiones pueden necesitar diferentes ε
-
-2. **Densidades variables**: 
-   - Rendimiento degradado con clusters de densidades muy diferentes
-   - Un solo ε global puede no ser óptimo para todo el dataset
-
-3. **Alta dimensionalidad**: 
-   - "Maldición de la dimensionalidad" afecta concepto de densidad
-   - Recomendado para 2-10 dimensiones
-
-4. **Determinismo con empates**: 
-   - Orden de procesamiento puede afectar asignación de border points
-   - Core points siempre son deterministas
-
-### Limitaciones de Implementación
-1. **Complejidad O(n²)**: Sin optimización con índices espaciales
-2. **Memoria**: Carga todo el dataset en RAM
-3. **Datasets grandes**: No optimizado para n > 10,000 puntos
-4. **Solo distancia euclidiana**: No soporta otras métricas de distancia
-
-### Casos de Uso Óptimos
-✅ Datasets con clusters de forma arbitraria (no convexos)  
-✅ Presencia de outliers que deben identificarse  
-✅ Densidad local variable pero consistente por región  
-✅ Dimensionalidad baja a media (2-10 features)  
-✅ Tamaño de dataset pequeño a mediano (< 5,000 puntos)
-
-### Casos Problemáticos
-❌ Clusters con densidades muy diferentes  
-❌ Datasets masivos (> 50,000 puntos) sin optimización  
-❌ Alta dimensionalidad (> 20 features)  
-❌ Cuando se requiere jerarquía de clusters
-
 ## Dependencias
 
 - **Python 3.8+**: Lenguaje base
@@ -376,21 +314,6 @@ Genera k-distance graphs para múltiples valores de minPts. Útil para:
 - Métricas (Silhouette Score, Davies-Bouldin, ARI)
 - Algoritmos de comparación (K-Means, Hierarchical)
 - Generación de datasets sintéticos
-
-## Referencias
-
-### Paper Original
-- Ester, M., Kriegel, H. P., Sander, J., & Xu, X. (1996). *A density-based algorithm for discovering clusters in large spatial databases with noise*. In Proceedings of the Second International Conference on Knowledge Discovery and Data Mining (KDD-96), pp. 226-231.
-
-### Conceptos Implementados
-- **ε-neighborhood**: Región de radio ε alrededor de un punto
-- **Core point**: Punto con ≥ minPts vecinos en su ε-neighborhood
-- **Density-reachable**: Conectividad transitiva a través de core points
-- **Density-connected**: Dos puntos alcanzables desde un core point común
-
-### Recursos Adicionales
-- [Wikipedia - DBSCAN](https://en.wikipedia.org/wiki/DBSCAN)
-- [Scikit-learn DBSCAN Documentation](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html)
 
 ## Autores
 
