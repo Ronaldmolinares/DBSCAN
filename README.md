@@ -10,14 +10,69 @@
 
 ## Instalación
 
+### Requisitos del Sistema
+- Python 3.8 o superior
+- pip (gestor de paquetes)
+- 2 GB RAM mínimo (para datasets de 500 puntos)
+
+### Instalación de Dependencias
 ```bash
+# Clonar repositorio (si aplica)
+git clone https://github.com/Ronaldmolinares/DBSCAN.git
+cd DBSCAN
+
+# Instalar dependencias
 pip install -r requirements.txt
 ```
 
-## Para usar
+**Dependencias instaladas:**
+- `numpy>=1.19.0`: Operaciones vectoriales y álgebra lineal
+- `matplotlib>=3.3.0`: Visualización de gráficos
+- `scikit-learn>=0.24.0`: Métricas y algoritmos de comparación
+- `tk`: Interfaz gráfica (incluido con Python en Windows)
 
+### Verificación de Instalación
+```bash
+python -c "import numpy, matplotlib, sklearn; print('Dependencias OK')"
+```
+
+## Uso
+
+### 1. Interfaz Gráfica (Recomendado)
 ```bash
 python run.py
+```
+Inicia la GUI interactiva con todas las funcionalidades.
+
+### 2. Uso Programático
+```python
+from core.my_dbscan import MyDBSCAN
+from core.datasets import load_moons
+from core.metrics import compute_all_metrics
+
+# Cargar datos
+X, y_true = load_moons(n_samples=500, noise=0.07)
+
+# Crear modelo
+dbscan = MyDBSCAN(eps=0.3, min_pts=5)
+
+# Ejecutar clustering
+labels = dbscan.fit_predict(X)
+
+# Evaluar
+metrics = compute_all_metrics(X, labels, y_true)
+print(f"Clusters encontrados: {metrics['n_clusters']}")
+print(f"Silhouette Score: {metrics['silhouette_score']:.4f}")
+print(f"Outliers: {metrics['n_noise']}")
+```
+
+### 3. Análisis desde Terminal
+```bash
+# Comparación de algoritmos
+python -m experiments.comparison
+
+# Análisis de epsilon
+python -m experiments.sensitivity
 ```
 
 ![Resultado DBSCAN](images/dbscan_result.png)
@@ -54,27 +109,48 @@ def _expand_cluster(self, X, labels, idx, neighbors, cluster_id):
         i += 1
 ```
 
-#### 3. Fit Predict
+#### 3. Fit
 ```python
-def fit_predict(self, X):
-    """Ejecuta DBSCAN completo"""
-    labels = np.zeros(len(X), dtype=int)  # 0 = no visitado
+def fit(self, X):
+    """Ejecuta DBSCAN y almacena resultados en self.labels_"""
+    if X.shape[0] == 0:
+        raise ValueError("Dataset vacío")
+    if X.ndim != 2:
+        raise ValueError("X debe ser matriz 2D")
+    
+    n = X.shape[0]
+    labels = np.zeros(n, dtype=int)  # 0 = no visitado
     cluster_id = 0
     
-    for idx in range(len(X)):
-        if labels[idx] != 0:
+    for point_idx in range(n):
+        if labels[point_idx] != 0:
             continue
             
-        neighbors = self._region_query(X, idx)
+        neighbors = self._region_query(X, point_idx)
         
         if len(neighbors) < self.min_pts:
-            labels[idx] = -1  # Ruido
+            labels[point_idx] = -1  # Ruido
         else:
             cluster_id += 1
-            self._expand_cluster(X, labels, idx, neighbors, cluster_id)
+            self._expand_cluster(X, labels, point_idx, neighbors, cluster_id)
     
-    return labels
+    self.labels_ = labels
+    return self
+
+def fit_predict(self, X):
+    """Ejecuta fit() y retorna las etiquetas"""
+    self.fit(X)
+    return self.labels_
 ```
+
+**Entrada**: 
+- `X`: numpy.ndarray de shape (n_samples, n_features)
+
+**Salida**: 
+- `labels_`: numpy.ndarray de shape (n_samples,) con valores:
+  - `-1`: ruido/outliers
+  - `0`: no procesado (solo durante ejecución)
+  - `1, 2, ..., k`: ID del cluster asignado
 
 ### Clasificación de Puntos
 
@@ -101,7 +177,9 @@ Similaridad con etiquetas verdaderas (corregido por azar).
 
 ### 4. K-Distance Graph
 Gráfico para seleccionar epsilon óptimo:
-- k = minPts − 1
+- Muestra la distancia al k-ésimo vecino más cercano
+- Se usa k = minPts - 1 (excluyendo el punto mismo)
+- El "codo" en la curva sugiere un valor apropiado de epsilon
 
 
 ## Estructura del Proyecto
@@ -109,60 +187,210 @@ Gráfico para seleccionar epsilon óptimo:
 ```
 DBSCAN/
 ├── core/
-│   ├── my_dbscan.py        # Implementación DBSCAN
-│   ├── metrics.py          # Métricas de evaluación
-│   └── datasets.py         # Carga de datos
+│   ├── my_dbscan.py        # Implementación DBSCAN desde cero
+│   ├── metrics.py          # Métricas de evaluación y k-distance
+│   └── datasets.py         # Generación y carga de datos
 ├── gui/
-│   └── main_gui.py         # Interfaz gráfica
+│   └── main_gui.py         # Interfaz gráfica completa
 ├── experiments/
-│   └── run_experiments.py  # Experimentos comparativos
-├── requirements.txt
-└── run.py                  # Ejecutar GUI
+│   ├── comparison.py       # Comparación DBSCAN vs K-Means vs HAC
+│   └── sensitivity.py      # Análisis de sensibilidad de epsilon
+├── images/
+│   └── dbscan_result.png   # Captura de resultados
+├── requirements.txt        # Dependencias del proyecto
+└── run.py                  # Punto de entrada principal
 ```
 
 ## Funcionalidades GUI
 
-1. **Selección de Dataset**: moons, circles, blobs
-2. **Ajuste de Parámetros**: Sliders para epsilon (0.05-2.0) y minPts (2-20)
-3. **Visualización**: Gráficos por cluster y outliers
-4. **Comparación de Algoritmos**: DBSCAN vs K-Means vs Hierarchical
-5. **K-Distance Graph**: Análisis para selección de epsilon
+### Panel de Control
+1. **Selección de Dataset**: 
+   - Datasets sintéticos: moons, circles, blobs (con ground truth)
+   - Carga de archivos CSV personalizados
+   
+2. **Ajuste Interactivo de Parámetros**:
+   - Slider de **Epsilon (ε)**: 0.05 - 2.0 con actualización en tiempo real
+   - Slider de **minPts**: 2 - 20 con actualización en tiempo real
 
+### Funciones de Análisis
+3. **Ejecutar DBSCAN**: 
+   - Clustering con parámetros actuales
+   - Visualización inmediata de resultados
+   - Métricas automáticas en panel informativo
+
+4. **Comparación de Algoritmos**: 
+   - Visualización lado a lado: DBSCAN vs K-Means vs Hierarchical
+   - Gráficos comparativos con métricas superpuestas
+
+5. **Analizar ε (k-distance graph)**: 
+   - Gráfico de k-distancias ordenadas
+   - Detección automática del "codo"
+   - Recomendación de epsilon óptimo
+
+6. **Ver Tabla de Métricas**: 
+   - Tabla comparativa emergente
+   - Métricas de los 3 algoritmos en formato tabular
+   - Exportable mediante captura de pantalla
+
+### Visualización
+7. **Gráficos Matplotlib Embebidos**:
+   - Clusters con colores únicos
+   - Outliers en negro con marcador 'x'
+   - Leyenda automática
+   - Grid y ejes etiquetados
+
+
+## Datasets Soportados
+
+### Datasets Sintéticos (con ground truth)
+- **moons**: Dos medias lunas entrelazadas (n_samples=500, noise=0.07)
+- **circles**: Círculos concéntricos (n_samples=500, noise=0.07, factor=0.5)
+- **blobs**: Clusters gaussianos (n_samples=500, centers=3)
+
+### Archivos CSV Personalizados
+**Formato requerido:**
+```csv
+x1,x2
+1.5,2.3
+2.1,3.4
+...
+```
+
+**Especificaciones:**
+- Separador: coma (`,`)
+- Mínimo 2 columnas (coordenadas)
+- Solo valores numéricos
+- Filas con NaN se filtran automáticamente
+- Normalización opcional disponible
 
 ## Ventajas de DBSCAN
 
-- Detecta clusters de **forma arbitraria**
-- No requiere especificar número de clusters
-- Identifica **outliers** 
-- Robusto a ruido
+- Detecta clusters de **forma arbitraria** (no convexos)
+- No requiere especificar número de clusters a priori
+- Identifica **outliers** explícitamente (label=-1)
+- Robusto a ruido en los datos
+- Basado en densidad local (no en distancia global como K-Means)
 
-## Parámetros
+## Experimentos y Scripts de Análisis
 
-| Parámetro | Descripción | Rango típico |
-|-----------|-------------|--------------|
-| `eps` | Radio de vecindad -> epsilon | 0.1 - 2.0 |
-| `min_pts` | Mínimo de vecinos para core point | 3 - 10 |
+### 1. Comparación de Algoritmos
+```bash
+python -m experiments.comparison
+```
+Ejecuta benchmark comparativo entre DBSCAN, K-Means y Hierarchical Clustering en dataset 'moons'. Genera visualizaciones lado a lado y tabla de métricas en consola.
 
-**Nota**: Usar k-distance graph para seleccionar `eps`, puede que el epsilon recomendado haga que en DBSCAN se produzca 1 solo cluster (epsilon grande para los datos). el epsilon recomendado no es perfecto.
+### 2. Análisis de Sensibilidad de Epsilon
+```bash
+python -m experiments.sensitivity
+```
+Genera k-distance graphs para múltiples valores de minPts. Útil para:
+- Determinar epsilon óptimo empíricamente
+- Analizar sensibilidad del parámetro
+- Comparar comportamiento con diferentes k
+
+**Salida**: Gráficos de k-distances con epsilon recomendado marcado.
+
+## Parámetros del Algoritmo
+
+| Parámetro | Descripción | Rango GUI | Rango típico |
+|-----------|-------------|-----------|--------------|
+| `eps` (ε) | Radio de vecindad para considerar vecinos cercanos | 0.05 - 2.0 | 0.1 - 1.0 |
+| `min_pts` | Número mínimo de puntos en ε-vecindario para ser core point | 2 - 20 | 3 - 10 |
+
+### Selección de Parámetros
+
+**Epsilon (ε):**
+- **Método recomendado**: Usar k-distance graph con k = minPts - 1
+- **Regla empírica**: El "codo" en la curva sugiere epsilon apropiado
+- **Advertencia**: El epsilon recomendado puede producir 1 solo cluster si es muy grande. Ajustar manualmente según visualización.
+
+**minPts:**
+- **Dimensión baja (2D)**: minPts ≥ 3 (mínimo recomendado)
+- **Regla general**: minPts ≥ dimensión + 1
+- **Datasets con ruido**: Valores más altos (5-10) para mayor robustez
 
 ## Complejidad Computacional
 
-- **Tiempo**: O(n²) sin índices espaciales
-- **Espacio**: O(n) para almacenar etiquetas y vecindarios
+### Análisis de Complejidad
+- **Tiempo**: O(n²) sin estructuras de datos espaciales
+  - `_region_query()`: O(n) por punto
+  - `fit()`: O(n) iteraciones × O(n) consultas = O(n²)
+- **Espacio**: O(n) para almacenar:
+  - `labels`: array de etiquetas (n elementos)
+  - `neighbors`: lista temporal de vecinos (≤ n elementos)
 
-## Limitaciones
+### Optimizaciones Posibles (No Implementadas)
+- **KD-Tree / Ball-Tree**: Reducción a O(n log n) en promedio
+- **Spatial Indexing**: R-tree para consultas de rango eficientes
+- **Paralelización**: Region queries son independientes
 
-- Sensible a la selección de `ε` y `minPts`
-- Rendimiento degradado con densidades variables
-- Complejidad O(n²) sin optimizaciones
+**Justificación de O(n²)**: Implementación didáctica que prioriza claridad sobre optimización. Suficiente para n ≤ 500 puntos (tiempo de respuesta < 2s).
+
+## Limitaciones y Consideraciones
+
+### Limitaciones Algorítmicas
+1. **Sensibilidad a parámetros**: 
+   - Requiere ajuste manual o análisis de k-distance
+   - Diferentes regiones pueden necesitar diferentes ε
+
+2. **Densidades variables**: 
+   - Rendimiento degradado con clusters de densidades muy diferentes
+   - Un solo ε global puede no ser óptimo para todo el dataset
+
+3. **Alta dimensionalidad**: 
+   - "Maldición de la dimensionalidad" afecta concepto de densidad
+   - Recomendado para 2-10 dimensiones
+
+4. **Determinismo con empates**: 
+   - Orden de procesamiento puede afectar asignación de border points
+   - Core points siempre son deterministas
+
+### Limitaciones de Implementación
+1. **Complejidad O(n²)**: Sin optimización con índices espaciales
+2. **Memoria**: Carga todo el dataset en RAM
+3. **Datasets grandes**: No optimizado para n > 10,000 puntos
+4. **Solo distancia euclidiana**: No soporta otras métricas de distancia
+
+### Casos de Uso Óptimos
+✅ Datasets con clusters de forma arbitraria (no convexos)  
+✅ Presencia de outliers que deben identificarse  
+✅ Densidad local variable pero consistente por región  
+✅ Dimensionalidad baja a media (2-10 features)  
+✅ Tamaño de dataset pequeño a mediano (< 5,000 puntos)
+
+### Casos Problemáticos
+❌ Clusters con densidades muy diferentes  
+❌ Datasets masivos (> 50,000 puntos) sin optimización  
+❌ Alta dimensionalidad (> 20 features)  
+❌ Cuando se requiere jerarquía de clusters
 
 ## Dependencias
 
-- Python 3.8+
-- NumPy
-- Matplotlib
-- scikit-learn (solo para métricas y comparación)
-- tkinter (incluido en Python)
+- **Python 3.8+**: Lenguaje base
+- **NumPy**: Operaciones matriciales y cálculo vectorizado
+- **Matplotlib**: Visualización científica
+- **scikit-learn**: Solo para métricas de evaluación y algoritmos de comparación
+- **tkinter**: Framework nativo de GUI (incluido con Python)
+
+**Nota sobre sklearn**: La implementación de DBSCAN es completamente independiente. Se usa sklearn únicamente para:
+- Métricas (Silhouette Score, Davies-Bouldin, ARI)
+- Algoritmos de comparación (K-Means, Hierarchical)
+- Generación de datasets sintéticos
+
+## Referencias
+
+### Paper Original
+- Ester, M., Kriegel, H. P., Sander, J., & Xu, X. (1996). *A density-based algorithm for discovering clusters in large spatial databases with noise*. In Proceedings of the Second International Conference on Knowledge Discovery and Data Mining (KDD-96), pp. 226-231.
+
+### Conceptos Implementados
+- **ε-neighborhood**: Región de radio ε alrededor de un punto
+- **Core point**: Punto con ≥ minPts vecinos en su ε-neighborhood
+- **Density-reachable**: Conectividad transitiva a través de core points
+- **Density-connected**: Dos puntos alcanzables desde un core point común
+
+### Recursos Adicionales
+- [Wikipedia - DBSCAN](https://en.wikipedia.org/wiki/DBSCAN)
+- [Scikit-learn DBSCAN Documentation](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html)
 
 ## Autores
 
