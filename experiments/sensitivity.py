@@ -136,11 +136,3 @@ if __name__ == "__main__":
     print("-" * 40)
     for k, data in results.items():
         print(f"  k={k} (minPts={k+1}): ε={data['eps_optimal']:.4f}")
-    
-    print("\n" + "=" * 70)
-    print("INTERPRETACIÓN:")
-    print("  • El 'codo' en el gráfico sugiere el epsilon óptimo")
-    print("  • Antes del codo: muchos puntos con baja densidad")
-    print("  • Después del codo: puntos comienzan a fusionarse en clusters")
-    print("  • Mayor minPts → mayor epsilon requerido")
-    print("=" * 70)
