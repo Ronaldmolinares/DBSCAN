@@ -67,13 +67,26 @@ print(f"Outliers: {metrics['n_noise']}")
 ```
 
 ### 3. Análisis desde Terminal
+comparison.py
+compara DBSCAN vs K-Means vs Hierarchical Clustering en el mismo dataset. Genera visualizaciones lado a lado y tabla de métricas para evaluar rendimiento relativo. 
 ```bash
-# Comparación de algoritmos
+# 1. Comparación de algoritmos
 python -m experiments.comparison
-
-# Análisis de epsilon
+```
+En la linea 66 se configuran los parametros para el archivo comparison.py
+```
+    # Parámetros ejemplo:
+    eps = 0.16
+    min_pts = 5
+    k = 2  # Número de clusters para K-Means y HAC
+```
+sensitivity.py
+genera el k-distance graph para encontrar el epsilon óptimo mediante el método del codo. Compara múltiples valores de minPts para análisis de sensibilidad.
+```
+# 2. Análisis de epsilon
 python -m experiments.sensitivity
 ```
+Ambos usan dataset 'moons' (500 puntos) por defecto.
 
 ### 4. Ejecución del proyecto
 ![Resultado DBSCAN](images/dbscan_result.png)
