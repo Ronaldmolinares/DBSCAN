@@ -10,7 +10,7 @@ from core.metrics import compute_all_metrics
 from core.datasets import load_moons, load_circles, load_blobs
 
 
-def compare_clustering(X, y_true=None, eps=0.3, min_pts=5, k=3):
+def compare_clustering(X, y_true=None, eps=0.16, min_pts=5, k=3):
 
     # --- 1. Implementación de DBSCAN ---
     dbscan = MyDBSCAN(eps=eps, min_pts=min_pts)
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     print(f"  • Dimensiones: {X.shape[1]}\n")
     
     # Parámetros
-    eps = 0.3
+    eps = 0.16
     min_pts = 5
     k = 2  # Número de clusters para K-Means y HAC
     
